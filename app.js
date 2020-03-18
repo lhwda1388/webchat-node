@@ -38,10 +38,18 @@ var chatNsp = io.of('/chat')
 chatNsp.on('connect', (socket) => {
   console.log('chat connection');
 
-  chatNsp.emit('init', 'hello')
-  socket.on('send', (msg) => {
-    console.log(`send ${msg}`);
-    chatNsp.emit('receive', msg);
+  /*
+  chatNsp.emit('init', {
+    msg: '접속',
+    uid: ''
+  })
+  */
+  socket.on('send', ({ msg, uid }) => {
+    console.log(`send ${msg}, ${uid}`);
+    chatNsp.emit('receive', {
+      msg: msg,
+      uid: uid
+    });
   });
 });
 

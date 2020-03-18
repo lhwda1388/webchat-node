@@ -2,29 +2,78 @@
 <html>
   <head>
     <title>Webchat</title>
-    <style>
-      * { margin: 0; padding: 0; box-sizing: border-box; }
-      body { font: 13px Helvetica, Arial; }
-      form { background: #000; padding: 3px; position: fixed; bottom: 0; width: 100%; }
-      form input { border: 0; padding: 10px; width: 90%; margin-right: .5%; }
-      form button { width: 9%; background: rgb(130, 224, 255); border: none; padding: 10px; }
-      #messages { list-style-type: none; margin: 0; padding: 0; }
-      #messages li { padding: 5px 10px; }
-      #messages li:nth-child(odd) { background: #eee; }
-    </style>
+        <link href="/stylesheets/style.css" rel="stylesheet">
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="/javascripts/socket.io.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.css" type="text/css" rel="stylesheet">
   </head>
   <body>
     <div id="app">
-      <ul id="messages">
-        <li v-for="msg in msgs">
-          {{ msg }}
-        </li>
-      </ul>
-      <form action="javascript:return false;">
-        <input id="m" autocomplete="off" v-model="text"/>
-        <button type="button" @click="send">Send</button>
-      </form>
+      <div class="container">
+          <h3 class=" text-center">Messaging</h3>
+          <div class="messaging">
+              <div class="inbox_msg">
+                  <div class="inbox_people">
+                      <div class="headind_srch">
+                          <div class="recent_heading">
+                              <h4>Recent</h4>
+                          </div>
+                          <div class="srch_bar">
+                              <div class="stylish-input-group">
+                                  <input type="text" class="search-bar" placeholder="Search">
+                                  <span class="input-group-addon">
+                      <button type="button"> <i class="fa fa-search" aria-hidden="true"></i> </button>
+                      </span> </div>
+                          </div>
+                      </div>
+                      <div class="inbox_chat">
+                          <div class="chat_list active_chat">
+                              <div class="chat_people">
+                                  <div class="chat_img">
+                                    <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil">
+                                  </div>
+                                  <div class="chat_ib">
+                                      <h5> <span class="chat_date"></span></h5>
+                                      <p></p>
+                                  </div>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+                  <div class="mesgs">
+                      <div class="msg_history">
+                        <template v-for="msgData in msgDatas">
+                          <div class="incoming_msg" v-if="msgData.uid !== uid">
+                              <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                              <div class="received_msg">
+                                  <div class="received_withd_msg">
+                                      <p>
+                                        {{ msgData.msg }}
+                                      </p>
+                                      <span class="time_date"> 11:01 AM    |    June 9</span></div>
+                              </div>
+                          </div>
+                          <div class="outgoing_msg" v-else>
+                              <div class="sent_msg">
+                                  <p>{{ msgData.msg }}
+                                  </p>
+                                  <span class="time_date"> 11:01 AM    |    June 9</span> </div>
+                          </div>
+                        </template>
+                      </div>
+                      <div class="type_msg">
+                          <div class="input_msg_write">
+                              <input type="text" class="write_msg" placeholder="Type a message"  v-model="text" @keyup.enter="send"/>
+                              <button class="msg_send_btn" type="button" @click="send"><i class="fa fa-paper-plane-o" aria-hidden="true"></i></button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+
+              <p class="text-center top_spac"> Design by <a target="_blank" href="#">Sunil Rajput</a></p>
+
+          </div>
+      </div>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.0"></script>
     <script>
@@ -32,27 +81,36 @@
         el: '#app',
         data() {
           return {
-            msgs: [],
+            msgDatas: [],
             sock: null,
-            text: ''
+            text: '',
+            uid: ''
           }
         },
         methods: {
           send() {
-            alert(this.text)
             if (this.text) {
-              this.sock.emit('send', this.text);
+              this.sock.emit('send', {
+                msg: this.text,
+                uid: this.uid
+              });
+              this.text = ''
             }            
+          },
+          makeRandomId() {
+            const dateTime = new Date().getTime()
+            return 'U' + dateTime
           }
         },
-        created () {
+        created () { 
           const $scope = this
+          $scope.uid = $scope.makeRandomId()
           $scope.sock = io('http://localhost:3000/chat', {});
-          $scope.sock.on('init', (msg) => {
-            $scope.msgs.push(msg);
+          $scope.sock.on('init', (msgDatas) => {
+            $scope.msgDatas.push(msgDatas);
           });
-          $scope.sock.on('receive', (msg) => {
-            $scope.msgs.push(msg);
+          $scope.sock.on('receive', (msgDatas) => {
+            $scope.msgDatas.push(msgDatas);
           })
         }
       })
