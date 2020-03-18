@@ -2,7 +2,8 @@ var express = require('express');
 var path = require('path');
 var cookieParser = require('cookie-parser');
 var logger = require('morgan');
-var socketServer = require('socket.io')
+var io = require('./src/sock/index')
+
 
 var indexRouter = require('./src/routes/index');
 var usersRouter = require('./src/routes/users');
@@ -24,33 +25,11 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 
 // socket io set
-var io = socketServer()
+console.log('io set start')
 app.set('io', io);
+console.log('io set end')
+// chat
+require('./src/sock/nsp/chat')(io);
 
-/*
-io.on('connection', (socket) => {
-  console.log('init connection')
-})
-*/
-
-var chatNsp = io.of('/chat')
-
-chatNsp.on('connect', (socket) => {
-  console.log('chat connection');
-
-  /*
-  chatNsp.emit('init', {
-    msg: '접속',
-    uid: ''
-  })
-  */
-  socket.on('send', ({ msg, uid }) => {
-    console.log(`send ${msg}, ${uid}`);
-    chatNsp.emit('receive', {
-      msg: msg,
-      uid: uid
-    });
-  });
-});
 
 module.exports = app;
