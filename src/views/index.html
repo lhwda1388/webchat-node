@@ -44,7 +44,9 @@
                       <div class="msg_history">
                         <template v-for="msgData in msgDatas">
                           <div class="incoming_msg" v-if="msgData.uid !== uid">
-                              <div class="incoming_msg_img"> <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> </div>
+                              <div class="incoming_msg_img"> 
+                                <img src="https://ptetutorials.com/images/user-profile.png" alt="sunil"> 
+                              </div>
                               <div class="received_msg">
                                   <div class="received_withd_msg">
                                       <p>
@@ -84,7 +86,9 @@
             msgDatas: [],
             sock: null,
             text: '',
-            uid: ''
+            uid: '',
+            isJoin: false,
+            room: '<%=room%>'
           }
         },
         methods: {
@@ -92,7 +96,8 @@
             if (this.text) {
               this.sock.emit('send', {
                 msg: this.text,
-                uid: this.uid
+                uid: this.uid,
+                room: this.room
               });
               this.text = ''
             }            
@@ -105,7 +110,10 @@
         created () { 
           const $scope = this
           $scope.uid = $scope.makeRandomId()
-          $scope.sock = io('http://localhost:3000/chat', {});
+          $scope.sock = io('http://localhost:3000/chat', {
+            transports: ['websocket', 'polling']
+          });
+          $scope.sock.emit('roomJoin', this.room)
           $scope.sock.on('init', (msgDatas) => {
             $scope.msgDatas.push(msgDatas);
           });
