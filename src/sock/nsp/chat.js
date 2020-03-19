@@ -6,6 +6,7 @@ var chatPub = {
   name: 'chatPub',
   isSub: false
 }
+sub.subscribe(chatPub.name)
 module.exports = function (io) {
   var chatNsp = io.of('/chat')
   sub.on('message', function (channel, data) {
@@ -20,7 +21,6 @@ module.exports = function (io) {
     console.log(`chat connection `);
 
     cliSocket.on('roomJoin', (room) => {
-      sub.subscribe(chatPub.name)
       cliSocket.join(room)
     })
 
